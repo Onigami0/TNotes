@@ -1087,7 +1087,10 @@ function App() {
     setTextElements(prev => prev.filter(el => el.id !== id));
   };
 
-  // Setup Wheel Event for Pan & Zoom
+  // Setup Wheel Event for Pan & Zoom + Touch Gestures
+  const pointersRef = useRef(new Map<number, { x: number, y: number }>());
+  const lastPinchDistanceRef = useRef<number | null>(null);
+
   useEffect(() => {
     const element = containerRef.current;
     if (!element) return;
@@ -1098,11 +1101,9 @@ function App() {
       // Zooming with pinch (trackpad) or pressing Ctrl/Cmd
       if (e.ctrlKey || e.metaKey) {
         setCamera(c => {
-          // Adjust zoom multiplier for smoothness
           const zoomDelta = Math.exp(-e.deltaY / 200);
-          const newZ = Math.min(Math.max(c.z * zoomDelta, 0.1), 10); // Clamped between 0.1x to 10x
+          const newZ = Math.min(Math.max(c.z * zoomDelta, 0.1), 10);
 
-          // Better zoom math: zoom towards the mouse cursor
           return {
             x: e.clientX - (e.clientX - c.x) * (newZ / c.z),
             y: e.clientY - (e.clientY - c.y) * (newZ / c.z),
@@ -1110,7 +1111,6 @@ function App() {
           };
         });
       } else {
-        // Panning (two finger scroll or mouse wheel)
         setCamera(c => ({
           ...c,
           x: c.x - e.deltaX,
@@ -1119,27 +1119,63 @@ function App() {
       }
     };
 
+    const handlePointerDown = (e: PointerEvent) => {
+      pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pointersRef.current.size < 2) {
+        lastPinchDistanceRef.current = null;
+      }
+    };
+
+    const handlePointerMove = (e: PointerEvent) => {
+      if (!pointersRef.current.has(e.pointerId)) return;
+      pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+      if (pointersRef.current.size === 2) {
+        const p = Array.from(pointersRef.current.values());
+        const distance = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y);
+        const center = {
+          x: (p[0].x + p[1].x) / 2,
+          y: (p[0].y + p[1].y) / 2
+        };
+
+        if (lastPinchDistanceRef.current !== null) {
+          const delta = distance / lastPinchDistanceRef.current;
+          setCamera(c => {
+            const newZ = Math.min(Math.max(c.z * delta, 0.1), 10);
+            return {
+              x: center.x - (center.x - c.x) * (newZ / c.z),
+              y: center.y - (center.y - c.y) * (newZ / c.z),
+              z: newZ
+            };
+          });
+        }
+        lastPinchDistanceRef.current = distance;
+      }
+    };
+
+    const handlePointerUp = (e: PointerEvent) => {
+      pointersRef.current.delete(e.pointerId);
+      if (pointersRef.current.size < 2) {
+        lastPinchDistanceRef.current = null;
+      }
+    };
+
     element.addEventListener('wheel', handleWheel, { passive: false });
-    return () => element.removeEventListener('wheel', handleWheel);
+    element.addEventListener('pointerdown', handlePointerDown);
+    element.addEventListener('pointermove', handlePointerMove);
+    element.addEventListener('pointerup', handlePointerUp);
+    element.addEventListener('pointercancel', handlePointerUp);
+
+    return () => {
+      element.removeEventListener('wheel', handleWheel);
+      element.removeEventListener('pointerdown', handlePointerDown);
+      element.removeEventListener('pointermove', handlePointerMove);
+      element.removeEventListener('pointerup', handlePointerUp);
+      element.removeEventListener('pointercancel', handlePointerUp);
+    };
   }, []);
 
-  // Auto-center planner when layout changes
-  useEffect(() => {
-    let width = window.innerWidth;
-    let height = 50;
 
-    if (pageSize !== 'infinity') {
-      width = PAPER_SIZES[pageSize].width;
-    } else if (['daily', 'weekly', 'monthly', 'yearly'].includes(pagePattern)) {
-      width = pagePattern === 'daily' ? 800 : 1200;
-    }
-
-    setCamera({
-      x: (window.innerWidth - width) / 2,
-      y: height,
-      z: 1
-    });
-  }, [pagePattern, pageSize]);
 
   // Keyboard Shortcuts
   useEffect(() => {
@@ -1501,6 +1537,25 @@ function App() {
           {/* 1. Page/Layout Popover */}
           {activePopover === 'page' && (
             <div className="tool-popover" style={{ padding: '20px', gap: '20px', width: '320px' }} onClick={(e) => e.stopPropagation()}>
+              <div className="settings-section">
+                <span className="settings-title">Yakınlaştırma</span>
+                <div className="pattern-selector">
+                  <button className="pattern-btn" onClick={() => {
+                      setCamera(c => {
+                          const newZ = Math.max(c.z * 0.8, 0.1);
+                          return { ...c, z: newZ, x: window.innerWidth/2 - (window.innerWidth/2 - c.x) * (newZ/c.z), y: window.innerHeight/2 - (window.innerHeight/2 - c.y) * (newZ/c.z) };
+                      });
+                  }}>-</button>
+                  <button className="pattern-btn" style={{ fontSize: '12px' }} onClick={() => fitToScreen()}>SIĞDIR</button>
+                  <button className="pattern-btn" onClick={() => {
+                      setCamera(c => {
+                          const newZ = Math.min(c.z * 1.25, 10);
+                          return { ...c, z: newZ, x: window.innerWidth/2 - (window.innerWidth/2 - c.x) * (newZ/c.z), y: window.innerHeight/2 - (window.innerHeight/2 - c.y) * (newZ/c.z) };
+                      });
+                  }}>+</button>
+                </div>
+              </div>
+
               {/* Kağıt Boyutu */}
               <div className="settings-section">
                 <span className="settings-title">Kağıt Boyutu</span>
