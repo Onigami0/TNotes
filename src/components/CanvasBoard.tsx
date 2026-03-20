@@ -142,12 +142,18 @@ export const CanvasBoard: React.FC<CanvasBoardProps> = ({
         const { x: cx, y: cy, z: cz } = cameraRef.current;
         
         // Calculate coordinate relative to the canvas's own top-left
-        const x = isFixed 
-            ? (e.clientX - rect.left - cx) / (cz * paperScale) 
-            : (e.clientX - rect.left - cx) / cz;
-        const y = isFixed 
-            ? (e.clientY - rect.top - cy) / (cz * paperScale) 
-            : (e.clientY - rect.top - cy) / cz;
+        let x, y;
+        if (isFixed) {
+            // In fixed mode, the container handles positioning (camera.x, camera.y)
+            // so rect.left/top already account for the visual position of the paper.
+            x = (e.clientX - rect.left) / (cz * paperScale);
+            y = (e.clientY - rect.top) / (cz * paperScale);
+        } else {
+            // In infinity mode, camera.x/y are panning offsets.
+            // We use clientX minus the absolute origin (camera.x)
+            x = (e.clientX - cx) / cz;
+            y = (e.clientY - cy) / cz;
+        }
         
         if (tool === 'select') {
             isSelectingRef.current = true;
@@ -178,12 +184,14 @@ export const CanvasBoard: React.FC<CanvasBoardProps> = ({
 
         // Use camera state directly for absolute stability
         const { x: cx, y: cy, z: cz } = cameraRef.current;
-        const x = isFixed 
-            ? (e.clientX - rect.left - cx) / (cz * paperScale) 
-            : (e.clientX - rect.left - cx) / cz;
-        const y = isFixed 
-            ? (e.clientY - rect.top - cy) / (cz * paperScale) 
-            : (e.clientY - rect.top - cy) / cz;
+        let x, y;
+        if (isFixed) {
+            x = (e.clientX - rect.left) / (cz * paperScale);
+            y = (e.clientY - rect.top) / (cz * paperScale);
+        } else {
+            x = (e.clientX - cx) / cz;
+            y = (e.clientY - cy) / cz;
+        }
         
         if (isSelectingRef.current) {
             selectionCurrentRef.current = { x, y };
