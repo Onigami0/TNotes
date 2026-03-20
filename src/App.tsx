@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import './App.css';
 import {
   Palette,
@@ -874,6 +874,21 @@ function App() {
     if (pageSize === 'infinity') return 1;
     return PAPER_SIZES[pageSize].width / 794;
   };
+  const [containerOffset, setContainerOffset] = useState({ x: 0, y: 0 });
+
+  // Update container offset on resize or sidebar toggle
+  useLayoutEffect(() => {
+    const updateOffset = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        setContainerOffset({ x: rect.left, y: rect.top });
+      }
+    };
+    updateOffset();
+    window.addEventListener('resize', updateOffset);
+    return () => window.removeEventListener('resize', updateOffset);
+  }, [isSidebarOpen]);
+
   const paperScale = getPaperScale();
 
 
@@ -1179,7 +1194,7 @@ function App() {
             return 'none';
           })(),
           backgroundPosition: (() => {
-            if (pageSize === 'infinity') return `${camera.x}px ${camera.y}px`;
+            if (pageSize === 'infinity') return `${camera.x - containerOffset.x}px ${camera.y - containerOffset.y}px`;
             if (['daily', 'weekly', 'monthly', 'yearly'].includes(pagePattern)) return 'center';
             return '0 0';
           })(),
@@ -1207,11 +1222,11 @@ function App() {
 
           // Position relative to the container (which already handles camera offsets via transform)
           const isFixed = pageSize !== 'infinity';
-          const left = isFixed ? (sx * paperScale) : (sx * camera.z + camera.x);
+          const left = isFixed ? (sx * paperScale) : (sx * camera.z + (camera.x - containerOffset.x));
           // Match TextTool's fixed pixel offset for stable baseline
           const top = isFixed
             ? ((sy * paperScale) - (27 * paperScale))
-            : ((sy * camera.z + camera.y) - (27 * camera.z));
+            : ((sy * camera.z + (camera.y - containerOffset.y)) - (27 * camera.z));
 
           // Coordinate height exactly with TextTool line-height
           const h = 40 * (isFixed ? paperScale : camera.z);
@@ -1252,6 +1267,8 @@ function App() {
           onDelete={deleteTextElement}
           camera={camera}
           paperScale={paperScale}
+          containerOffset={containerOffset}
+          isFixed={pageSize !== 'infinity'}
         />
         <ImageTool
           elements={imageElements}
@@ -1259,6 +1276,8 @@ function App() {
           onDelete={(id) => setImageElements(prev => prev.filter(el => el.id !== id))}
           camera={camera}
           paperScale={paperScale}
+          containerOffset={containerOffset}
+          isFixed={pageSize !== 'infinity'}
         />
         {(selectedElements.strokes.length > 0 || selectedElements.texts.length > 0) && (
           <SelectionOverlay
@@ -1275,6 +1294,8 @@ function App() {
             onClearSelection={() => {
               setSelectedElements({ strokes: [], texts: [] });
             }}
+            containerOffset={containerOffset}
+            isFixed={pageSize !== 'infinity'}
           />
         )}
       </div>

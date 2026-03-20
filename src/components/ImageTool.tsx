@@ -16,9 +16,11 @@ interface ImageToolProps {
     onDelete: (id: string) => void;
     camera: { x: number, y: number, z: number };
     paperScale?: number;
+    containerOffset?: { x: number, y: number };
+    isFixed?: boolean;
 }
 
-export const ImageTool: React.FC<ImageToolProps> = ({ elements, onUpdate, onDelete, camera, paperScale = 1 }) => {
+export const ImageTool: React.FC<ImageToolProps> = ({ elements, onUpdate, onDelete, camera, paperScale = 1, containerOffset = { x: 0, y: 0 }, isFixed = false }) => {
     const [draggingId, setDraggingId] = useState<string | null>(null);
     const [resizingId, setResizingId] = useState<string | null>(null);
     const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -100,8 +102,6 @@ export const ImageTool: React.FC<ImageToolProps> = ({ elements, onUpdate, onDele
         };
     }, [draggingId, resizingId, elements, onUpdate, camera.z, paperScale]);
 
-    const isFixed = paperScale !== 1;
-
 
     return (
         <div style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', width: '100%', height: '100%', zIndex: 10 }}>
@@ -112,8 +112,8 @@ export const ImageTool: React.FC<ImageToolProps> = ({ elements, onUpdate, onDele
                     onMouseLeave={() => setHoveredId(null)}
                     style={{
                         position: 'absolute',
-                        left: isFixed ? `${el.x * paperScale}px` : `${el.x * camera.z + camera.x}px`,
-                        top: isFixed ? `${el.y * paperScale}px` : `${el.y * camera.z + camera.y}px`,
+                        left: isFixed ? `${el.x * paperScale}px` : `${el.x * camera.z + (camera.x - containerOffset.x)}px`,
+                        top: isFixed ? `${el.y * paperScale}px` : `${el.y * camera.z + (camera.y - containerOffset.y)}px`,
                         width: isFixed ? `${el.width * paperScale}px` : `${el.width * camera.z}px`,
                         height: isFixed ? `${el.height * paperScale}px` : `${el.height * camera.z}px`,
                         pointerEvents: 'auto',

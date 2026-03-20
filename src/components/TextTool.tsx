@@ -21,9 +21,11 @@ interface TextToolProps {
     camera: { x: number, y: number, z: number };
     paperScale?: number;
     gridSize?: number;
+    containerOffset?: { x: number, y: number };
+    isFixed?: boolean;
 }
 
-export const TextTool: React.FC<TextToolProps> = ({ elements, onUpdate, onDelete, camera, paperScale = 1, gridSize = 40 }) => {
+export const TextTool: React.FC<TextToolProps> = ({ elements, onUpdate, onDelete, camera, paperScale = 1, gridSize = 40, containerOffset = { x: 0, y: 0 }, isFixed = false }) => {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [draggingId, setDraggingId] = useState<string | null>(null);
     const dragStartPos = useRef({ x: 0, y: 0 });
@@ -76,8 +78,6 @@ export const TextTool: React.FC<TextToolProps> = ({ elements, onUpdate, onDelete
         };
     }, [draggingId, elements, onUpdate, camera.z, paperScale]);
 
-    const isFixed = paperScale !== 1;
-
 
     return (
         <div style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', width: '100%', height: '100%' }}>
@@ -87,8 +87,8 @@ export const TextTool: React.FC<TextToolProps> = ({ elements, onUpdate, onDelete
                     className="text-element-container"
                     style={{
                         position: 'absolute',
-                        left: isFixed ? `${el.x * paperScale}px` : `${el.x * camera.z + camera.x}px`,
-                        top: isFixed ? `${el.y * paperScale - (27 * paperScale)}px` : `${(el.y - 27) * camera.z + camera.y}px`,
+                        left: isFixed ? `${el.x * paperScale}px` : `${el.x * camera.z + (camera.x - containerOffset.x)}px`,
+                        top: isFixed ? `${el.y * paperScale - (27 * paperScale)}px` : `${(el.y - 27) * camera.z + (camera.y - containerOffset.y)}px`,
                         pointerEvents: 'auto',
                         display: 'flex',
                         flexDirection: 'column',

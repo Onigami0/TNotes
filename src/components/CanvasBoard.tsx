@@ -84,10 +84,11 @@ export const CanvasBoard: React.FC<CanvasBoardProps> = ({
         // The canvas BITMAP size we set above is already the "un-zoomed" paper size.
         // So we only apply dpr and paperScale here.
         // In infinite mode, we apply both camera zoom (z) and pan (x,y) manually.
-        // Since the canvas is now 'fixed' at 0,0 (in App.tsx), tx/ty is just x,y.
+        // THE FIX: We MUST subtract the canvas element's screen position (rect.left/top)
+        // from the global camera coordinates (x,y) to get the correct local translation.
         const internalScale = isFixed ? (dpr * paperScale) : (dpr * z * paperScale);
-        const tx = isFixed ? 0 : x;
-        const ty = isFixed ? 0 : y;
+        const tx = isFixed ? 0 : (x - rect.left);
+        const ty = isFixed ? 0 : (y - rect.top);
  
         ctx.setTransform(internalScale, 0, 0, internalScale, tx * dpr, ty * dpr);
         ctx.lineCap = 'round';
