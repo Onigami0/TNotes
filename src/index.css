@@ -1,0 +1,122 @@
+:root {
+  --bg-color: #f7f7f9;
+  --text-color: #111827;
+
+  /* Glassmorphism Surface (Light) */
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.8);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.04);
+  
+  /* Outline UI / Switch border */
+  --ui-border: rgba(0, 0, 0, 0.08);
+
+  /* Accent Colors (Pastel/Neon Violet) */
+  --accent-color: #8b5cf6;
+  --accent-hover: #7c3aed;
+  --danger-color: #ef4444;
+
+  /* Page Background Customizations */
+  --page-color: #ffffff;
+  --page-pattern-color: rgba(0, 0, 0, 0.02);
+
+  /* Toolbar specific variables */
+  --toolbar-bg: rgba(243, 244, 246, 0.85); /* Light gray glass */
+  --active-icon-color: #ef4444; /* Red */
+  --active-icon-bg: rgba(239, 68, 68, 0.1);
+}
+
+.dark-theme {
+  --bg-color: #0f1115;
+  --text-color: #f3f4f6;
+
+  /* Glassmorphism Surface (Dark) */
+  --glass-bg: rgba(20, 20, 25, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+
+  /* Outline UI / Switch border */
+  --ui-border: rgba(255, 255, 255, 0.1);
+
+  /* Accent Colors (Pastel/Neon Violet) */
+  --accent-color: #a78bfa;
+  --accent-hover: #8b5cf6;
+  --danger-color: #f87171;
+
+  /* Page Background Customizations */
+  --page-color: #18191e;
+  --page-pattern-color: rgba(255, 255, 255, 0.015);
+
+  /* Toolbar specific variables */
+  --toolbar-bg: rgba(0, 122, 255, 0.25); /* Blue glass */
+  --active-icon-color: #f3f4f6; /* Koyu beyaz / Light gray */
+  --active-icon-bg: rgba(255, 255, 255, 0.15);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  overflow: hidden;
+  /* We will manage scrolling within components if necessary */
+}
+
+/* Base Glassmorphism Class */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: 16px;
+}
+
+/* Page Patterns Container */
+.page-layer {
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  --zoom: 1;
+  --pan-x: 0px;
+  --pan-y: 0px;
+  background-position: var(--pan-x) var(--pan-y);
+}
+
+/* Page Patterns */
+.pattern-grid {
+  background-size: calc(20px * var(--zoom)) calc(20px * var(--zoom));
+  background-image:
+    linear-gradient(to right, var(--page-pattern-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--page-pattern-color) 1px, transparent 1px);
+}
+
+.pattern-lines {
+  background-size: 100% calc(30px * var(--zoom));
+  background-image: linear-gradient(to bottom, var(--page-pattern-color) 1px, transparent 1px);
+}
+
+.pattern-dots {
+  background-image: radial-gradient(var(--page-pattern-color) calc(1.5px * var(--zoom)), transparent calc(1.5px * var(--zoom)));
+  background-size: calc(20px * var(--zoom)) calc(20px * var(--zoom));
+}
+
+.pattern-blank {
+  background-image: none;
+}
+
+/* Planner Patterns (Logic moved to inline styles in App.tsx for better reliability) */
+.pattern-daily,
+.pattern-weekly,
+.pattern-monthly,
+.pattern-yearly {
+  background-repeat: no-repeat;
+}
