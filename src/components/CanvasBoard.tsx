@@ -14,11 +14,13 @@ interface CanvasBoardProps {
     strokes: Stroke[];
     onStrokeComplete: (stroke: Stroke) => void;
     onSelection?: (bounds: { x: number, y: number, width: number, height: number } | null) => void;
+    palmRejectionEnabled?: boolean;
 }
 
 export const CanvasBoard: React.FC<CanvasBoardProps> = ({ 
     tool, color, size, camera, paperScale = 1, isFixed = false, 
-    paperWidth, paperHeight, strokes, onStrokeComplete, onSelection 
+    paperWidth, paperHeight, strokes, onStrokeComplete, onSelection,
+    palmRejectionEnabled = false
 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -136,6 +138,11 @@ export const CanvasBoard: React.FC<CanvasBoardProps> = ({
 
     const handlePointerDown = (e: React.PointerEvent) => {
         if (tool === 'text' || tool === 'hand') return; // Don't handle drawing if text or hand tool is active
+        
+        // Palm Rejection: Ignore touch if enabled and it's a drawing tool
+        if (palmRejectionEnabled && e.pointerType === 'touch' && !['select'].includes(tool)) {
+            return;
+        }
         
         const rect = canvasRef.current?.getBoundingClientRect();
         if (!rect) return;

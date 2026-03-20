@@ -631,3 +631,15 @@ input:checked + .slider:before {
     --ui-scale: 0.75;
   }
 }
+
+@media (max-width: 450px) {
+  :root {
+    --ui-scale: 0.65;
+  }
+}
+
+@media (max-width: 380px) {
+  :root {
+    --ui-scale: 0.55;
+  }
+}

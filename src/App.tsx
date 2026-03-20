@@ -166,6 +166,7 @@ function App() {
   const [isNoteColorPickerOpen, setIsNoteColorPickerOpen] = useState(false);
   const [isClearPageModalOpen, setIsClearPageModalOpen] = useState(false);
   const [uiScale, setUiScale] = useState(1.0);
+  const [palmRejectionEnabled, setPalmRejectionEnabled] = useState(true);
   
   // Storage operations
   const [isExporting, setIsExporting] = useState(false);
@@ -553,13 +554,22 @@ function App() {
     if (savedScale) {
         setUiScale(parseFloat(savedScale));
     }
+
+    const savedPalmRejection = localStorage.getItem('palmRejection');
+    if (savedPalmRejection !== null) {
+        setPalmRejectionEnabled(savedPalmRejection === 'true');
+    }
   }, []);
 
-  // Apply UI Scale to document
+  // Apply UI Scale and Palm Rejection to document
   useEffect(() => {
     document.documentElement.style.setProperty('--ui-scale', uiScale.toString());
     localStorage.setItem('uiScale', uiScale.toString());
   }, [uiScale]);
+
+  useEffect(() => {
+    localStorage.setItem('palmRejection', palmRejectionEnabled.toString());
+  }, [palmRejectionEnabled]);
 
   const toggleTheme = () => {
     const newMode = !isDarkMode;
@@ -1362,6 +1372,7 @@ function App() {
           strokes={strokes}
           onStrokeComplete={handleStrokeComplete}
           onSelection={handleSelection}
+          palmRejectionEnabled={palmRejectionEnabled}
         />
         <TextTool
           elements={textElements}
@@ -1626,11 +1637,25 @@ function App() {
               {/* Arayüz Boyutu */}
               <div className="settings-section">
                 <span className="settings-title">Arayüz Boyutu</span>
-                <div className="pattern-selector">
-                  <button className={`pattern-btn ${uiScale === 0.75 ? 'active' : ''}`} onClick={() => setUiScale(0.75)}>KÜÇÜK</button>
-                  <button className={`pattern-btn ${uiScale === 1.0 ? 'active' : ''}`} onClick={() => setUiScale(1.0)}>ORTA</button>
-                  <button className={`pattern-btn ${uiScale === 1.25 ? 'active' : ''}`} onClick={() => setUiScale(1.25)}>BÜYÜK</button>
+                <div className="pattern-selector" style={{ flexWrap: 'wrap', gap: '4px' }}>
+                  <button className={`pattern-btn ${uiScale === 0.5 ? 'active' : ''}`} style={{ flex: '1 1 30%', fontSize: '10px' }} onClick={() => setUiScale(0.5)}>MİNİ</button>
+                  <button className={`pattern-btn ${uiScale === 0.65 ? 'active' : ''}`} style={{ flex: '1 1 30%', fontSize: '10px' }} onClick={() => setUiScale(0.65)}>E.KÜÇÜK</button>
+                  <button className={`pattern-btn ${uiScale === 0.8 ? 'active' : ''}`} style={{ flex: '1 1 30%', fontSize: '10px' }} onClick={() => setUiScale(0.8)}>KÜÇÜK</button>
+                  <button className={`pattern-btn ${uiScale === 1.0 ? 'active' : ''}`} style={{ flex: '1 1 30%', fontSize: '10px' }} onClick={() => setUiScale(1.0)}>ORTA</button>
+                  <button className={`pattern-btn ${uiScale === 1.25 ? 'active' : ''}`} style={{ flex: '1 1 30%', fontSize: '10px' }} onClick={() => setUiScale(1.25)}>BÜYÜK</button>
                 </div>
+              </div>
+
+              {/* El & Avuç Rejection */}
+              <div className="settings-section">
+                <label className="switch-container">
+                  <span className="switch-label-text">Avuç İçi Koruması (Palm Rejection)</span>
+                  <label className="switch">
+                    <input type="checkbox" checked={palmRejectionEnabled} onChange={(e) => setPalmRejectionEnabled(e.target.checked)} />
+                    <span className="slider"></span>
+                  </label>
+                </label>
+                <p style={{ fontSize: '10px', opacity: 0.6, marginTop: '4px' }}>Aktifken parmakla çizim yapılamaz, sadece kalemle yazılır.</p>
               </div>
 
               {/* Arka Plan Rengi */}
