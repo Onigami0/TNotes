@@ -135,7 +135,7 @@ export const CanvasBoard: React.FC<CanvasBoardProps> = ({
 
 
     const handlePointerDown = (e: React.PointerEvent) => {
-        if (tool === 'text') return; // Don't handle drawing if text tool is active
+        if (tool === 'text' || tool === 'hand') return; // Don't handle drawing if text or hand tool is active
         
         const rect = canvasRef.current?.getBoundingClientRect();
         if (!rect) return;

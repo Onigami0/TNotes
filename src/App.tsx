@@ -29,7 +29,8 @@ import {
   GripHorizontal,
   RotateCcw,
   LayoutDashboard,
-  X
+  X,
+  Hand
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
@@ -110,7 +111,7 @@ const PAGE_COLORS = [
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [activeTool, setActiveTool] = useState<PenType>('select');
+  const [activeTool, setActiveTool] = useState<PenType>('hand');
   const [activeColor, setActiveColor] = useState(COLORS[0]);
   const [strokeSize, setStrokeSize] = useState(4);
 
@@ -1128,6 +1129,7 @@ function App() {
 
     const handlePointerMove = (e: PointerEvent) => {
       if (!pointersRef.current.has(e.pointerId)) return;
+      const prevPos = pointersRef.current.get(e.pointerId)!;
       pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
       if (pointersRef.current.size === 2) {
@@ -1150,6 +1152,13 @@ function App() {
           });
         }
         lastPinchDistanceRef.current = distance;
+      } else if (pointersRef.current.size === 1 && activeTool === 'hand') {
+        // Single finger panning
+        setCamera(c => ({
+          ...c,
+          x: c.x + (e.clientX - prevPos.x),
+          y: c.y + (e.clientY - prevPos.y)
+        }));
       }
     };
 
@@ -1445,6 +1454,9 @@ function App() {
           <div className="divider" />
 
           {/* Drawing Tools Group */}
+          <button className={`tool-btn ${activeTool === 'hand' ? 'active' : ''}`} title="Kaydır (H)" onClick={() => { setActiveTool('hand'); setIsSmartPenActive(false); setActivePopover(null); }}>
+            <Hand size={22} strokeWidth={2.5} />
+          </button>
           <button className={`tool-btn ${activeTool === 'select' ? 'active' : ''}`} title="Seçim (V)" onClick={() => { setActiveTool('select'); setIsSmartPenActive(false); setActivePopover(null); }}>
             <MousePointer2 size={22} strokeWidth={2.5} />
           </button>

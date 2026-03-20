@@ -1,4 +1,4 @@
-export type PenType = 'ballpoint' | 'fountain' | 'highlighter' | 'eraser' | 'text' | 'select' | 'rectangle' | 'circle' | 'line' | 'arrow';
+export type PenType = 'hand' | 'ballpoint' | 'fountain' | 'highlighter' | 'eraser' | 'text' | 'select' | 'rectangle' | 'circle' | 'line' | 'arrow';
 
 export interface Point {
     x: number;
