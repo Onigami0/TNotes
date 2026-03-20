@@ -30,6 +30,7 @@ export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({
     onConvertToText,
     onClearSelection
 }) => {
+    const isFixed = paperScale !== 1;
     const [bounds, setBounds] = useState<{ x: number, y: number, w: number, h: number } | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [isScaling, setIsScaling] = useState<string | null>(null);
@@ -177,10 +178,10 @@ export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({
         <div
             style={{
                 position: 'absolute',
-                left: `${bounds.x * paperScale}px`,
-                top: `${bounds.y * paperScale}px`,
-                width: `${bounds.w * paperScale}px`,
-                height: `${bounds.h * paperScale}px`,
+                left: isFixed ? `${bounds.x * paperScale}px` : `${bounds.x * camera.z + camera.x}px`,
+                top: isFixed ? `${bounds.y * paperScale}px` : `${bounds.y * camera.z + camera.y}px`,
+                width: isFixed ? `${bounds.w * paperScale}px` : `${bounds.w * camera.z}px`,
+                height: isFixed ? `${bounds.h * paperScale}px` : `${bounds.h * camera.z}px`,
                 border: '2px dashed #007aff',
                 backgroundColor: 'rgba(0, 122, 255, 0.05)',
                 pointerEvents: 'none',

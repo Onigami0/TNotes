@@ -100,6 +100,8 @@ export const ImageTool: React.FC<ImageToolProps> = ({ elements, onUpdate, onDele
         };
     }, [draggingId, resizingId, elements, onUpdate, camera.z, paperScale]);
 
+    const isFixed = paperScale !== 1;
+
 
     return (
         <div style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', width: '100%', height: '100%', zIndex: 10 }}>
@@ -110,10 +112,10 @@ export const ImageTool: React.FC<ImageToolProps> = ({ elements, onUpdate, onDele
                     onMouseLeave={() => setHoveredId(null)}
                     style={{
                         position: 'absolute',
-                        left: `${el.x * paperScale}px`,
-                        top: `${el.y * paperScale}px`,
-                        width: `${el.width * paperScale}px`,
-                        height: `${el.height * paperScale}px`,
+                        left: isFixed ? `${el.x * paperScale}px` : `${el.x * camera.z + camera.x}px`,
+                        top: isFixed ? `${el.y * paperScale}px` : `${el.y * camera.z + camera.y}px`,
+                        width: isFixed ? `${el.width * paperScale}px` : `${el.width * camera.z}px`,
+                        height: isFixed ? `${el.height * paperScale}px` : `${el.height * camera.z}px`,
                         pointerEvents: 'auto',
                         border: hoveredId === el.id || draggingId === el.id || resizingId === el.id ? '2px dashed var(--accent-color)' : '2px solid transparent',
                         transition: 'border 0.2s',

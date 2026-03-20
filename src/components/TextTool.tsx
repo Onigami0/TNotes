@@ -76,6 +76,8 @@ export const TextTool: React.FC<TextToolProps> = ({ elements, onUpdate, onDelete
         };
     }, [draggingId, elements, onUpdate, camera.z, paperScale]);
 
+    const isFixed = paperScale !== 1;
+
 
     return (
         <div style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', width: '100%', height: '100%' }}>
@@ -85,12 +87,14 @@ export const TextTool: React.FC<TextToolProps> = ({ elements, onUpdate, onDelete
                     className="text-element-container"
                     style={{
                         position: 'absolute',
-                        left: `${el.x * paperScale}px`,
-                        top: `${el.y * paperScale - (27 * paperScale)}px`,
+                        left: isFixed ? `${el.x * paperScale}px` : `${el.x * camera.z + camera.x}px`,
+                        top: isFixed ? `${el.y * paperScale - (27 * paperScale)}px` : `${(el.y - 27) * camera.z + camera.y}px`,
                         pointerEvents: 'auto',
                         display: 'flex',
                         flexDirection: 'column',
                         zIndex: editingId === el.id ? 100 : 5,
+                        transform: isFixed ? 'none' : `scale(${camera.z})`,
+                        transformOrigin: 'top left'
                     }}
                 >
                     <style>{`

@@ -1145,10 +1145,13 @@ function App() {
           backgroundColor: pageColor !== 'var(--bg-color)' ? pageColor : 'var(--page-color)',
           width: pageSize !== 'infinity' ? `${PAPER_SIZES[pageSize].width}px` : '100vw',
           height: pageSize !== 'infinity' ? `${PAPER_SIZES[pageSize].height}px` : '100vh',
+          position: pageSize === 'infinity' ? 'fixed' : 'relative',
+          top: 0,
+          left: 0,
           boxShadow: pageSize !== 'infinity' ? '0 0 40px rgba(0,0,0,0.1)' : 'none',
-          // UNIFIED PAN & ZOOM via CSS for ALL modes (including infinity)
-          // This ensures DOM elements (TextTool, ImageTool) stay synced with the canvas
-          transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.z})`,
+          // ONLY apply container transform for FIXED pages (A4, etc.)
+          // Infinite mode stays fixed at 100vw/100vh and handles pan/zoom internally
+          transform: pageSize !== 'infinity' ? `translate(${camera.x}px, ${camera.y}px) scale(${camera.z})` : 'none',
           transformOrigin: 'top left',
           margin: 0,
           backgroundImage: (() => {
@@ -1176,6 +1179,7 @@ function App() {
             return 'none';
           })(),
           backgroundPosition: (() => {
+            if (pageSize === 'infinity') return `${camera.x}px ${camera.y}px`;
             if (['daily', 'weekly', 'monthly', 'yearly'].includes(pagePattern)) return 'center';
             return '0 0';
           })(),
