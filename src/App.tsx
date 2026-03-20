@@ -164,6 +164,7 @@ function App() {
 
   const [isNoteColorPickerOpen, setIsNoteColorPickerOpen] = useState(false);
   const [isClearPageModalOpen, setIsClearPageModalOpen] = useState(false);
+  const [uiScale, setUiScale] = useState(1.0);
   
   // Storage operations
   const [isExporting, setIsExporting] = useState(false);
@@ -546,7 +547,18 @@ function App() {
       setIsDarkMode(true);
       document.body.classList.add('dark-theme');
     }
+
+    const savedScale = localStorage.getItem('uiScale');
+    if (savedScale) {
+        setUiScale(parseFloat(savedScale));
+    }
   }, []);
+
+  // Apply UI Scale to document
+  useEffect(() => {
+    document.documentElement.style.setProperty('--ui-scale', uiScale.toString());
+    localStorage.setItem('uiScale', uiScale.toString());
+  }, [uiScale]);
 
   const toggleTheme = () => {
     const newMode = !isDarkMode;
@@ -1543,6 +1555,16 @@ function App() {
                 <Eraser size={18} />
                 Sayfayı Temizle
               </button>
+
+              {/* Arayüz Boyutu */}
+              <div className="settings-section">
+                <span className="settings-title">Arayüz Boyutu</span>
+                <div className="pattern-selector">
+                  <button className={`pattern-btn ${uiScale === 0.75 ? 'active' : ''}`} onClick={() => setUiScale(0.75)}>KÜÇÜK</button>
+                  <button className={`pattern-btn ${uiScale === 1.0 ? 'active' : ''}`} onClick={() => setUiScale(1.0)}>ORTA</button>
+                  <button className={`pattern-btn ${uiScale === 1.25 ? 'active' : ''}`} onClick={() => setUiScale(1.25)}>BÜYÜK</button>
+                </div>
+              </div>
 
               {/* Arka Plan Rengi */}
               <div className="settings-section">
