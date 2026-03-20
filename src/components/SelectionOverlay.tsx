@@ -10,7 +10,6 @@ interface SelectionOverlayProps {
     textElements: TextElement[];
     camera: { x: number, y: number, z: number };
     paperScale?: number;
-    isFixed?: boolean;
     onMove: (dx: number, dy: number) => void;
     onScale: (sx: number, sy: number, originX: number, originY: number) => void;
     onDelete: () => void;
@@ -25,7 +24,6 @@ export const SelectionOverlay: React.FC<SelectionOverlayProps> = ({
     textElements,
     camera,
     paperScale = 1,
-    isFixed = false,
     onMove,
     onScale,
     onDelete,

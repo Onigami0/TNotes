@@ -1248,7 +1248,6 @@ function App() {
           onDelete={deleteTextElement}
           camera={camera}
           paperScale={paperScale}
-          isFixed={pageSize !== 'infinity'}
         />
         <ImageTool
           elements={imageElements}
@@ -1256,7 +1255,6 @@ function App() {
           onDelete={(id) => setImageElements(prev => prev.filter(el => el.id !== id))}
           camera={camera}
           paperScale={paperScale}
-          isFixed={pageSize !== 'infinity'}
         />
         {(selectedElements.strokes.length > 0 || selectedElements.texts.length > 0) && (
           <SelectionOverlay
@@ -1266,7 +1264,6 @@ function App() {
             textElements={textElements}
             camera={camera}
             paperScale={paperScale}
-            isFixed={pageSize !== 'infinity'}
             onMove={handleSelectedMove}
             onScale={handleSelectedScale}
             onDelete={handleSelectedDelete}

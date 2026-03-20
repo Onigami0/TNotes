@@ -20,11 +20,10 @@ interface TextToolProps {
     onDelete: (id: string) => void;
     camera: { x: number, y: number, z: number };
     paperScale?: number;
-    isFixed?: boolean;
     gridSize?: number;
 }
 
-export const TextTool: React.FC<TextToolProps> = ({ elements, onUpdate, onDelete, camera, paperScale = 1, isFixed = false, gridSize = 40 }) => {
+export const TextTool: React.FC<TextToolProps> = ({ elements, onUpdate, onDelete, camera, paperScale = 1, gridSize = 40 }) => {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [draggingId, setDraggingId] = useState<string | null>(null);
     const dragStartPos = useRef({ x: 0, y: 0 });

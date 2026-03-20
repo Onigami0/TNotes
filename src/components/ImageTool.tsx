@@ -16,10 +16,9 @@ interface ImageToolProps {
     onDelete: (id: string) => void;
     camera: { x: number, y: number, z: number };
     paperScale?: number;
-    isFixed?: boolean;
 }
 
-export const ImageTool: React.FC<ImageToolProps> = ({ elements, onUpdate, onDelete, camera, paperScale = 1, isFixed = false }) => {
+export const ImageTool: React.FC<ImageToolProps> = ({ elements, onUpdate, onDelete, camera, paperScale = 1 }) => {
     const [draggingId, setDraggingId] = useState<string | null>(null);
     const [resizingId, setResizingId] = useState<string | null>(null);
     const [hoveredId, setHoveredId] = useState<string | null>(null);
