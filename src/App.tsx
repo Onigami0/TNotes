@@ -1450,7 +1450,14 @@ function App() {
                   <button className={`pattern-btn ${pageSize === 'A3' ? 'active' : ''}`} onClick={() => setPageSize('A3')}>A3</button>
                   <button className={`pattern-btn ${pageSize === 'A4' ? 'active' : ''}`} onClick={() => setPageSize('A4')}>A4</button>
                   <button className={`pattern-btn ${pageSize === 'A5' ? 'active' : ''}`} onClick={() => setPageSize('A5')}>A5</button>
-                  <button className={`pattern-btn ${pageSize === 'infinity' ? 'active' : ''}`} onClick={() => setPageSize('infinity')} style={{ height: '36px', borderRadius: '10px', display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'center' }}><Square size={14} /> <span>Sonsuz</span></button>
+                  <button 
+                    className={`pattern-btn ${pageSize === 'infinity' ? 'active' : ''}`} 
+                    onClick={() => alert('Bu özellik yakında eklenecek!')} 
+                    style={{ height: '36px', borderRadius: '10px', display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'center', opacity: 0.7 }}
+                  >
+                    <Square size={14} /> 
+                    <span>Sonsuz (Yakında)</span>
+                  </button>
                 </div>
               </div>
               {/* Desen */}
