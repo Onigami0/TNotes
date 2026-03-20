@@ -78,6 +78,16 @@ export const TextTool: React.FC<TextToolProps> = ({ elements, onUpdate, onDelete
         };
     }, [draggingId, elements, onUpdate, camera.z, paperScale]);
 
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    // Auto-expand textarea height
+    useEffect(() => {
+        if (editingId && textareaRef.current) {
+            const textarea = textareaRef.current;
+            textarea.style.height = 'auto';
+            textarea.style.height = `${textarea.scrollHeight}px`;
+        }
+    }, [editingId, elements]);
 
     return (
         <div style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', width: '100%', height: '100%' }}>
@@ -104,6 +114,7 @@ export const TextTool: React.FC<TextToolProps> = ({ elements, onUpdate, onDelete
                     {editingId === el.id ? (
                         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                             <textarea
+                                ref={textareaRef}
                                 autoFocus
                                 spellCheck="false"
                                 autoCorrect="off"
@@ -129,7 +140,7 @@ export const TextTool: React.FC<TextToolProps> = ({ elements, onUpdate, onDelete
                                     lineHeight: `${gridSize * paperScale}px`,
                                     width: '100%',
                                     resize: 'none',
-                                    padding: '0 !important',
+                                    padding: 0,
                                     margin: 0,
                                     overflow: 'hidden',
                                     height: 'auto',
