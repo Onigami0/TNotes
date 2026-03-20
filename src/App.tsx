@@ -1192,7 +1192,7 @@ function App() {
       element.removeEventListener('pointerup', handlePointerUp);
       element.removeEventListener('pointercancel', handlePointerUp);
     };
-  }, []);
+  }, [activeTool, pageSize, palmRejectionEnabled]); // Add dependencies to break stale closures
 
 
 
