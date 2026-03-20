@@ -134,10 +134,20 @@ export const CanvasBoard: React.FC<CanvasBoardProps> = ({
 
     const handlePointerDown = (e: React.PointerEvent) => {
         if (tool === 'text') return; // Don't handle drawing if text tool is active
+        
+        const rect = canvasRef.current?.getBoundingClientRect();
+        if (!rect) return;
+
         // Use camera state directly for absolute stability
         const { x: cx, y: cy, z: cz } = cameraRef.current;
-        const x = isFixed ? (e.clientX - cx) / (cz * paperScale) : (e.clientX - cx) / cz;
-        const y = isFixed ? (e.clientY - cy) / (cz * paperScale) : (e.clientY - cy) / cz;
+        
+        // Calculate coordinate relative to the canvas's own top-left
+        const x = isFixed 
+            ? (e.clientX - rect.left - cx) / (cz * paperScale) 
+            : (e.clientX - rect.left - cx) / cz;
+        const y = isFixed 
+            ? (e.clientY - rect.top - cy) / (cz * paperScale) 
+            : (e.clientY - rect.top - cy) / cz;
         
         if (tool === 'select') {
             isSelectingRef.current = true;
@@ -163,10 +173,17 @@ export const CanvasBoard: React.FC<CanvasBoardProps> = ({
     const handlePointerMove = (e: React.PointerEvent) => {
         if (!isDrawingRef.current && !isSelectingRef.current) return;
 
+        const rect = canvasRef.current?.getBoundingClientRect();
+        if (!rect) return;
+
         // Use camera state directly for absolute stability
         const { x: cx, y: cy, z: cz } = cameraRef.current;
-        const x = isFixed ? (e.clientX - cx) / (cz * paperScale) : (e.clientX - cx) / cz;
-        const y = isFixed ? (e.clientY - cy) / (cz * paperScale) : (e.clientY - cy) / cz;
+        const x = isFixed 
+            ? (e.clientX - rect.left - cx) / (cz * paperScale) 
+            : (e.clientX - rect.left - cx) / cz;
+        const y = isFixed 
+            ? (e.clientY - rect.top - cy) / (cz * paperScale) 
+            : (e.clientY - rect.top - cy) / cz;
         
         if (isSelectingRef.current) {
             selectionCurrentRef.current = { x, y };

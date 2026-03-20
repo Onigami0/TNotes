@@ -21,6 +21,9 @@ export const drawStrokeOnCanvas = (
     ctx: CanvasRenderingContext2D,
     stroke: Stroke
 ) => {
+    // Reset composite operation to default at the start of each stroke
+    ctx.globalCompositeOperation = 'source-over';
+
     if (stroke.points.length === 0) return;
 
     let options = {};
