@@ -30,7 +30,10 @@ import {
   RotateCcw,
   LayoutDashboard,
   X,
-  Hand
+  Hand,
+  ZoomIn,
+  ZoomOut,
+  Maximize
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
@@ -1422,6 +1425,29 @@ function App() {
         paperSize={pageSize !== 'infinity' ? PAPER_SIZES[pageSize as keyof typeof PAPER_SIZES] : undefined}
       />
 
+      {/* Floating Zoom Controls */}
+      <div className="floating-zoom-controls">
+        <button className="zoom-btn" title="Uzaklaştır" onClick={() => {
+            setCamera(c => {
+                const newZ = Math.max(c.z * 0.8, 0.1);
+                return { ...c, z: newZ, x: window.innerWidth/2 - (window.innerWidth/2 - c.x) * (newZ/c.z), y: window.innerHeight/2 - (window.innerHeight/2 - c.y) * (newZ/c.z) };
+            });
+        }}>
+          <ZoomOut size={18} />
+        </button>
+        <button className="zoom-btn" title="Sığdır" onClick={() => fitToScreen()}>
+          <Maximize size={18} />
+        </button>
+        <button className="zoom-btn" title="Yakınlaştır" onClick={() => {
+            setCamera(c => {
+                const newZ = Math.min(c.z * 1.25, 10);
+                return { ...c, z: newZ, x: window.innerWidth/2 - (window.innerWidth/2 - c.x) * (newZ/c.z), y: window.innerHeight/2 - (window.innerHeight/2 - c.y) * (newZ/c.z) };
+            });
+        }}>
+          <ZoomIn size={18} />
+        </button>
+      </div>
+
       {/* DRAGGABLE MENU BAR WITH HIDDEN TOOLBAR */}
       <div
         className="menu-bar-container"
@@ -1560,24 +1586,6 @@ function App() {
           {/* 1. Page/Layout Popover */}
           {activePopover === 'page' && (
             <div className="tool-popover" style={{ padding: '20px', gap: '20px', width: '320px' }} onClick={(e) => e.stopPropagation()}>
-              <div className="settings-section">
-                <span className="settings-title">Yakınlaştırma</span>
-                <div className="pattern-selector">
-                  <button className="pattern-btn" onClick={() => {
-                      setCamera(c => {
-                          const newZ = Math.max(c.z * 0.8, 0.1);
-                          return { ...c, z: newZ, x: window.innerWidth/2 - (window.innerWidth/2 - c.x) * (newZ/c.z), y: window.innerHeight/2 - (window.innerHeight/2 - c.y) * (newZ/c.z) };
-                      });
-                  }}>-</button>
-                  <button className="pattern-btn" style={{ fontSize: '12px' }} onClick={() => fitToScreen()}>SIĞDIR</button>
-                  <button className="pattern-btn" onClick={() => {
-                      setCamera(c => {
-                          const newZ = Math.min(c.z * 1.25, 10);
-                          return { ...c, z: newZ, x: window.innerWidth/2 - (window.innerWidth/2 - c.x) * (newZ/c.z), y: window.innerHeight/2 - (window.innerHeight/2 - c.y) * (newZ/c.z) };
-                      });
-                  }}>+</button>
-                </div>
-              </div>
 
               {/* Kağıt Boyutu */}
               <div className="settings-section">
