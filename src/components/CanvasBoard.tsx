@@ -77,15 +77,10 @@ export const CanvasBoard: React.FC<CanvasBoardProps> = ({
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.clearRect(0, 0, targetWidth, targetHeight);
 
-        // Apply camera transformation for drawing
-        const { x, y, z } = cameraRef.current;
-
-        // In fixed mode, the container handles visual translate(x,y) and scale(z).
-        // The canvas BITMAP size we set above is already the "un-zoomed" paper size.
-        // So we only apply dpr and paperScale here.
-        const internalScale = isFixed ? (dpr * paperScale) : (dpr * z * paperScale);
-        const tx = isFixed ? 0 : x;
-        const ty = isFixed ? 0 : y;
+        // Apply dpr and paperScale. Zoom (z) is now handled by the parent container CSS.
+        const internalScale = dpr * paperScale;
+        const tx = 0;
+        const ty = 0;
 
         ctx.setTransform(internalScale, 0, 0, internalScale, tx * dpr, ty * dpr);
         ctx.lineCap = 'round';
@@ -139,21 +134,13 @@ export const CanvasBoard: React.FC<CanvasBoardProps> = ({
         if (!rect) return;
 
         // Use camera state directly for absolute stability
-        const { x: cx, y: cy, z: cz } = cameraRef.current;
+        const { z: cz } = cameraRef.current;
         
         // Calculate coordinate relative to the canvas's own top-left
-        let x, y;
-        if (isFixed) {
-            // In fixed mode, the container handles positioning (camera.x, camera.y)
-            // so rect.left/top already account for the visual position of the paper.
-            x = (e.clientX - rect.left) / (cz * paperScale);
-            y = (e.clientY - rect.top) / (cz * paperScale);
-        } else {
-            // In infinity mode, camera.x/y are panning offsets.
-            // We use clientX minus the absolute origin (camera.x)
-            x = (e.clientX - cx) / cz;
-            y = (e.clientY - cy) / cz;
-        }
+        // Since the parent container now handles Translate(x,y) and Scale(z) for ALL modes
+        // we can simplify the coordinate calculation to just follow the visual bounds.
+        const x = (e.clientX - rect.left) / (cz * paperScale);
+        const y = (e.clientY - rect.top) / (cz * paperScale);
         
         if (tool === 'select') {
             isSelectingRef.current = true;
@@ -183,15 +170,9 @@ export const CanvasBoard: React.FC<CanvasBoardProps> = ({
         if (!rect) return;
 
         // Use camera state directly for absolute stability
-        const { x: cx, y: cy, z: cz } = cameraRef.current;
-        let x, y;
-        if (isFixed) {
-            x = (e.clientX - rect.left) / (cz * paperScale);
-            y = (e.clientY - rect.top) / (cz * paperScale);
-        } else {
-            x = (e.clientX - cx) / cz;
-            y = (e.clientY - cy) / cz;
-        }
+        const { z: cz } = cameraRef.current;
+        const x = (e.clientX - rect.left) / (cz * paperScale);
+        const y = (e.clientY - rect.top) / (cz * paperScale);
         
         if (isSelectingRef.current) {
             selectionCurrentRef.current = { x, y };
