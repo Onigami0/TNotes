@@ -15,6 +15,7 @@
   align-items: center;
   gap: 12px;
   transform: translateZ(10px); /* WebKit z-index fix */
+  transition: opacity 0.3s ease;
 }
 
 .draggable-handle {

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import './App.css';
 import {
   Palette,
@@ -110,7 +110,7 @@ const PAGE_COLORS = [
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [activeTool, setActiveTool] = useState<PenType>('ballpoint');
+  const [activeTool, setActiveTool] = useState<PenType>('select');
   const [activeColor, setActiveColor] = useState(COLORS[0]);
   const [strokeSize, setStrokeSize] = useState(4);
 
@@ -423,10 +423,43 @@ function App() {
   const [selectedElements, setSelectedElements] = useState<{ strokes: string[], texts: string[] }>({ strokes: [], texts: [] });
 
   // Toolbar State
-  const [isToolbarOpen, setIsToolbarOpen] = useState(false);
-  // Default centered near top
-  const [menuBarPosition, setMenuBarPosition] = useState({ x: window.innerWidth / 2 - 24, y: 20 });
+  const [isToolbarOpen, setIsToolbarOpen] = useState(true);
+  // Default partially centered (x: -1 means "use CSS centering")
+  const [menuBarPosition, setMenuBarPosition] = useState({ x: -1, y: 20 });
   const [activePopover, setActivePopover] = useState<string | null>(null);
+
+  // Fit paper to screen
+  const fitToScreen = useCallback(() => {
+    if (!containerRef.current) return;
+    const paper = pageSize !== 'infinity' ? PAPER_SIZES[pageSize as keyof typeof PAPER_SIZES] : PAPER_SIZES['A4'];
+    const padding = 40;
+    
+    // Calculate available space (accounting for sidebar if open)
+    const availableWidth = window.innerWidth - (isSidebarOpen ? 280 : 0) - padding * 2;
+    const availableHeight = window.innerHeight - padding * 2;
+    
+    // Calculate zoom to fit
+    const zoom = Math.min(availableWidth / paper.width, availableHeight / paper.height, 1);
+    
+    // Center paper in available space
+    setCamera({
+      x: (isSidebarOpen ? 280 : 0) + (window.innerWidth - (isSidebarOpen ? 280 : 0) - paper.width * zoom) / 2,
+      y: (window.innerHeight - paper.height * zoom) / 2,
+      z: zoom
+    });
+  }, [pageSize, isSidebarOpen]);
+
+  // Initial setup on mount
+  useEffect(() => {
+    setActiveTool('select');
+  }, []);
+
+  // Fit to screen when data loads or sidebar toggles
+  useEffect(() => {
+    if (!isInitialLoad) {
+      setTimeout(fitToScreen, 100);
+    }
+  }, [isInitialLoad, isSidebarOpen, pageSize]);
 
   // Dragging logic for menu bar
   const isDraggingRef = useRef(false);
@@ -443,6 +476,18 @@ function App() {
 
   const handleMenuBarPointerMove = (e: React.PointerEvent) => {
     if (!isDraggingRef.current) return;
+    
+    // If we were using CSS centering (x === -1), calculate actual pixel start on first move
+    let startX = menuBarPosition.x;
+    if (startX === -1) {
+        const container = document.querySelector('.menu-bar-container');
+        if (container) {
+            startX = container.getBoundingClientRect().left;
+            // Update dragStartPosRef to be relative to this new startX
+            dragStartPosRef.current.x = e.clientX - startX;
+        }
+    }
+
     setMenuBarPosition({
       x: e.clientX - dragStartPosRef.current.x,
       y: e.clientY - dragStartPosRef.current.y
@@ -1313,8 +1358,10 @@ function App() {
       <div
         className="menu-bar-container"
         style={{
-          left: `${menuBarPosition.x}px`,
+          left: menuBarPosition.x === -1 ? '50%' : `${menuBarPosition.x}px`,
           top: `${menuBarPosition.y}px`,
+          transform: menuBarPosition.x === -1 ? 'translateX(-50%)' : 'none',
+          touchAction: 'none'
         }}
       >
         {/* Drag Handle & Toggle */}
