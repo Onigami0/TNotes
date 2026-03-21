@@ -500,11 +500,13 @@ function App() {
 
   // Dragging logic for menu bar
   const isDraggingRef = useRef(false);
+  const hasDraggedRef = useRef(false);
   const dragStartPosRef = useRef({ x: 0, y: 0 });
 
   const handleMenuBarPointerDown = (e: React.PointerEvent) => {
     e.currentTarget.setPointerCapture(e.pointerId);
     isDraggingRef.current = true;
+    hasDraggedRef.current = false;
     dragStartPosRef.current = {
       x: e.clientX - menuBarPosition.x,
       y: e.clientY - menuBarPosition.y
@@ -514,6 +516,15 @@ function App() {
   const handleMenuBarPointerMove = (e: React.PointerEvent) => {
     if (!isDraggingRef.current) return;
     
+    // Only mark as dragged if we moved more than a couple pixels
+    if (!hasDraggedRef.current) {
+        const dx = Math.abs(e.clientX - (dragStartPosRef.current.x + menuBarPosition.x));
+        const dy = Math.abs(e.clientY - (dragStartPosRef.current.y + menuBarPosition.y));
+        if (dx > 3 || dy > 3) {
+            hasDraggedRef.current = true;
+        }
+    }
+
     // If we were using CSS centering (x === -1), calculate actual pixel start on first move
     let startX = menuBarPosition.x;
     if (startX === -1) {
@@ -534,7 +545,15 @@ function App() {
   const handleMenuBarPointerUp = (e: React.PointerEvent) => {
     e.currentTarget.releasePointerCapture(e.pointerId);
     isDraggingRef.current = false;
+    // We keep hasDraggedRef as true until the onClick handler fires or the next down event
   };
+
+  // Auto-close popovers when irrelevant tools are selected (keyboard/sync)
+  useEffect(() => {
+    if (activePopover === 'text' && activeTool !== 'text') {
+      setActivePopover(null);
+    }
+  }, [activePopover, activeTool]);
 
   // Sync active text settings from selected text
   useEffect(() => {
@@ -1496,7 +1515,11 @@ function App() {
           onPointerMove={handleMenuBarPointerMove}
           onPointerUp={handleMenuBarPointerUp}
           onPointerCancel={handleMenuBarPointerUp}
-          onClick={() => setIsToolbarOpen(!isToolbarOpen)}
+          onClick={() => {
+            if (!hasDraggedRef.current) {
+                setIsToolbarOpen(!isToolbarOpen);
+            }
+          }}
         >
           <GripHorizontal size={22} strokeWidth={2.5} />
         </div>
