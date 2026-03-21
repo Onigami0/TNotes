@@ -19,74 +19,19 @@ export function getSvgPathFromStroke(stroke: number[][]) {
 
 export const drawStrokeOnCanvas = (
     ctx: CanvasRenderingContext2D,
-    stroke: Stroke
-) => {
+    stroke: Stroke,
+    cachedPath?: Path2D
+): Path2D | undefined => {
     // Reset composite operation to default at the start of each stroke
     ctx.globalCompositeOperation = 'source-over';
 
     if (stroke.points.length === 0) return;
 
-    let options = {};
-    if (stroke.tool === 'ballpoint') {
-        options = {
-            size: stroke.size,
-            thinning: 0,
-            smoothing: 0.5,
-            streamline: 0.5,
-        };
-    } else if (stroke.tool === 'fountain') {
-        options = {
-            size: stroke.size + 4,
-            thinning: 0.7,
-            smoothing: 0.5,
-            streamline: 0.5,
-        };
-    } else if (stroke.tool === 'highlighter') {
-        options = {
-            size: stroke.size * 2,
-            thinning: -0.1,
-            smoothing: 0.2,
-            streamline: 0.8,
-        };
-    } else if (stroke.tool === 'eraser') {
-        options = {
-            size: stroke.size * 3,
-            thinning: 0,
-            smoothing: 0.5,
-            streamline: 0.5,
-        };
-    }
-
-    const outlinePoints = getStroke(stroke.points as any, options);
-    const pathData = getSvgPathFromStroke(outlinePoints);
-    const path = new Path2D(pathData);
-
-    if (stroke.tool === 'eraser') {
-        ctx.globalCompositeOperation = 'destination-out';
-        ctx.fillStyle = 'rgba(0,0,0,1)';
-    } else if (stroke.tool === 'highlighter') {
-        ctx.globalCompositeOperation = 'source-over';
-
-        const hex = stroke.color.replace('#', '');
-        let r = parseInt(hex.substring(0, 2), 16) || 255;
-        let g = parseInt(hex.substring(2, 4), 16) || 255;
-        let b = parseInt(hex.substring(4, 6), 16) || 0;
-
-        // If color is too dark (e.g. black #000000), default to a classic highlighter yellow
-        if (r < 50 && g < 50 && b < 50) {
-            r = 255; g = 255; b = 0;
-        }
-
-        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.45)`;
-    } else {
-        ctx.fillStyle = stroke.color;
-    }
-
     // Set common stroke properties for shapes and non-pressure tools
     ctx.strokeStyle = stroke.color;
     ctx.lineWidth = stroke.size;
 
-    // Handle Geometric Shapes
+    // Handle Geometric Shapes (These are not cached as Path2D currently)
     if (['rectangle', 'circle', 'line', 'arrow'].includes(stroke.tool)) {
         ctx.globalCompositeOperation = 'source-over';
         if (stroke.points.length < 2) return;
@@ -126,9 +71,45 @@ export const drawStrokeOnCanvas = (
             ctx.fillStyle = stroke.color;
             ctx.fill();
         }
-    } else {
-        ctx.fill(path);
+        return undefined;
     }
+
+    // Hand-drawn strokes (with pressure/smoothing)
+    let path = cachedPath;
+    if (!path) {
+        let options = {};
+        if (stroke.tool === 'ballpoint') {
+            options = { size: stroke.size, thinning: 0, smoothing: 0.5, streamline: 0.5 };
+        } else if (stroke.tool === 'fountain') {
+            options = { size: stroke.size + 4, thinning: 0.7, smoothing: 0.5, streamline: 0.5 };
+        } else if (stroke.tool === 'highlighter') {
+            options = { size: stroke.size * 2, thinning: -0.1, smoothing: 0.2, streamline: 0.8 };
+        } else if (stroke.tool === 'eraser') {
+            options = { size: stroke.size * 3, thinning: 0, smoothing: 0.5, streamline: 0.5 };
+        }
+
+        const outlinePoints = getStroke(stroke.points as any, options);
+        const pathData = getSvgPathFromStroke(outlinePoints);
+        path = new Path2D(pathData);
+    }
+
+    if (stroke.tool === 'eraser') {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.fillStyle = 'rgba(0,0,0,1)';
+    } else if (stroke.tool === 'highlighter') {
+        ctx.globalCompositeOperation = 'source-over';
+        const hex = stroke.color.replace('#', '');
+        let r = parseInt(hex.substring(0, 2), 16) || 255;
+        let g = parseInt(hex.substring(2, 4), 16) || 255;
+        let b = parseInt(hex.substring(4, 6), 16) || 0;
+        if (r < 50 && g < 50 && b < 50) { r = 255; g = 255; b = 0; }
+        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.45)`;
+    } else {
+        ctx.fillStyle = stroke.color;
+    }
+
+    ctx.fill(path);
+    return path;
 };
 
 export const isPointInRect = (x: number, y: number, rect: { x: number, y: number, width: number, height: number }) => {
