@@ -32,20 +32,20 @@ export const drawStrokeOnCanvas = (
     ctx.lineWidth = stroke.size;
 
     // Handle Geometric Shapes (These are not cached as Path2D currently)
-    if (['rectangle', 'circle', 'line', 'arrow'].includes(stroke.tool)) {
+    if (['rectangle', 'circle', 'line', 'arrow', 'triangle', 'star', 'diamond', 'pentagon', 'hexagon'].includes(stroke.tool)) {
         ctx.globalCompositeOperation = 'source-over';
         if (stroke.points.length < 2) return;
         const start = stroke.points[0];
         const end = stroke.points[stroke.points.length - 1];
 
+        const x = Math.min(start.x, end.x);
+        const y = Math.min(start.y, end.y);
+        const w = Math.abs(end.x - start.x);
+        const h = Math.abs(end.y - start.y);
+
         ctx.beginPath();
         if (stroke.tool === 'rectangle') {
-            ctx.strokeRect(
-                Math.min(start.x, end.x),
-                Math.min(start.y, end.y),
-                Math.abs(end.x - start.x),
-                Math.abs(end.y - start.y)
-            );
+            ctx.strokeRect(x, y, w, h);
         } else if (stroke.tool === 'circle') {
             const radius = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
             ctx.arc(start.x, start.y, radius, 0, Math.PI * 2);
@@ -70,6 +70,55 @@ export const drawStrokeOnCanvas = (
             ctx.closePath();
             ctx.fillStyle = stroke.color;
             ctx.fill();
+        } else if (stroke.tool === 'triangle') {
+            ctx.moveTo(x + w / 2, y);
+            ctx.lineTo(x, y + h);
+            ctx.lineTo(x + w, y + h);
+            ctx.closePath();
+            ctx.stroke();
+        } else if (stroke.tool === 'diamond') {
+            ctx.moveTo(x + w / 2, y);
+            ctx.lineTo(x + w, y + h / 2);
+            ctx.lineTo(x + w / 2, y + h);
+            ctx.lineTo(x, y + h / 2);
+            ctx.closePath();
+            ctx.stroke();
+        } else if (stroke.tool === 'pentagon' || stroke.tool === 'hexagon') {
+            const sides = stroke.tool === 'pentagon' ? 5 : 6;
+            const centerX = x + w / 2;
+            const centerY = y + h / 2;
+            const radiusX = w / 2;
+            const radiusY = h / 2;
+            
+            for (let i = 0; i < sides; i++) {
+                const angle = (i * 2 * Math.PI) / sides - Math.PI / 2;
+                const px = centerX + radiusX * Math.cos(angle);
+                const py = centerY + radiusY * Math.sin(angle);
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+            ctx.stroke();
+        } else if (stroke.tool === 'star') {
+            const centerX = x + w / 2;
+            const centerY = y + h / 2;
+            const outerRadiusX = w / 2;
+            const outerRadiusY = h / 2;
+            const innerRadiusX = w / 5;
+            const innerRadiusY = h / 5;
+            const points = 5;
+            
+            for (let i = 0; i < points * 2; i++) {
+                const radiusX = i % 2 === 0 ? outerRadiusX : innerRadiusX;
+                const radiusY = i % 2 === 0 ? outerRadiusY : innerRadiusY;
+                const angle = (i * Math.PI) / points - Math.PI / 2;
+                const px = centerX + radiusX * Math.cos(angle);
+                const py = centerY + radiusY * Math.sin(angle);
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+            ctx.stroke();
         }
         return undefined;
     }

@@ -208,7 +208,7 @@ export const CanvasBoard: React.FC<CanvasBoardProps> = React.memo(({
         } else if (isDrawingRef.current && currentStrokeRef.current) {
             const pressure = e.pressure !== 0 ? e.pressure : 0.5;
             
-            if (['rectangle', 'circle', 'line', 'arrow'].includes(tool)) {
+            if (['rectangle', 'circle', 'line', 'arrow', 'triangle', 'star', 'diamond', 'pentagon', 'hexagon'].includes(tool)) {
                 currentStrokeRef.current.points = [
                     currentStrokeRef.current.points[0],
                     { x, y, pressure }

@@ -33,7 +33,12 @@ import {
   Hand,
   ZoomIn,
   ZoomOut,
-  Maximize
+  Maximize,
+  Triangle,
+  Star,
+  Diamond,
+  Pentagon,
+  Hexagon
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
@@ -1804,7 +1809,7 @@ function App() {
           {activePopover === 'shapes' && (
             <div className="tool-popover" style={{ padding: '16px', gap: '16px', minWidth: '180px' }} onClick={(e) => e.stopPropagation()}>
               <span className="settings-title">Geometrik Şekiller</span>
-              <div className="pattern-selector" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+              <div className="pattern-selector" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                 <button
                   className={`pattern-btn ${activeTool === 'rectangle' ? 'active' : ''}`}
                   style={{ height: '48px', borderRadius: '12px' }}
@@ -1822,6 +1827,14 @@ function App() {
                   <Circle size={22} strokeWidth={2.5} />
                 </button>
                 <button
+                  className={`pattern-btn ${activeTool === 'triangle' ? 'active' : ''}`}
+                  style={{ height: '48px', borderRadius: '12px' }}
+                  onClick={() => { setActiveTool('triangle'); setActivePopover(null); }}
+                  title="Üçgen"
+                >
+                  <Triangle size={22} strokeWidth={2.5} />
+                </button>
+                <button
                   className={`pattern-btn ${activeTool === 'line' ? 'active' : ''}`}
                   style={{ height: '48px', borderRadius: '12px' }}
                   onClick={() => { setActiveTool('line'); setActivePopover(null); }}
@@ -1836,6 +1849,38 @@ function App() {
                   title="Ok"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: 'rotate(-45deg)' }}><path d="m5 12 7-7 7 7" /><path d="M12 19V5" /></svg>
+                </button>
+                <button
+                  className={`pattern-btn ${activeTool === 'diamond' ? 'active' : ''}`}
+                  style={{ height: '48px', borderRadius: '12px' }}
+                  onClick={() => { setActiveTool('diamond'); setActivePopover(null); }}
+                  title="Baklava"
+                >
+                  <Diamond size={22} strokeWidth={2.5} />
+                </button>
+                <button
+                  className={`pattern-btn ${activeTool === 'pentagon' ? 'active' : ''}`}
+                  style={{ height: '48px', borderRadius: '12px' }}
+                  onClick={() => { setActiveTool('pentagon'); setActivePopover(null); }}
+                  title="Beşgen"
+                >
+                  <Pentagon size={22} strokeWidth={2.5} />
+                </button>
+                <button
+                  className={`pattern-btn ${activeTool === 'hexagon' ? 'active' : ''}`}
+                  style={{ height: '48px', borderRadius: '12px' }}
+                  onClick={() => { setActiveTool('hexagon'); setActivePopover(null); }}
+                  title="Altıgen"
+                >
+                  <Hexagon size={22} strokeWidth={2.5} />
+                </button>
+                <button
+                  className={`pattern-btn ${activeTool === 'star' ? 'active' : ''}`}
+                  style={{ height: '48px', borderRadius: '12px' }}
+                  onClick={() => { setActiveTool('star'); setActivePopover(null); }}
+                  title="Yıldız"
+                >
+                  <Star size={22} strokeWidth={2.5} />
                 </button>
               </div>
             </div>
