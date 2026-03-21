@@ -174,10 +174,57 @@ function App() {
   // Storage operations
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState({ current: 0, total: 0 });
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved');
+
+  // Unified save function
+  const saveCurrentNote = useCallback(async (forcedId?: string) => {
+    const id = forcedId || activeNoteId;
+    if (!id || isInitialLoad) return;
+
+    setSaveStatus('saving');
+    try {
+      // Sync current state to pages array
+      const updatedPages = [...pages];
+      updatedPages[currentPageIndex] = {
+        strokes: [...strokes],
+        textElements: [...textElements],
+        imageElements: [...imageElements],
+        pageSettings: { pageSize, pagePattern, pageColor }
+      };
+
+      await storage.saveNote(id, {}, {
+        pages: updatedPages,
+        currentPageIndex,
+        pageSettings: { pageSize, pagePattern, pageColor }
+      });
+      
+      setPages(updatedPages);
+      setNotes(prev => prev.map(n => n.id === id ? { ...n, updatedAt: Date.now() } : n));
+      setSaveStatus('saved');
+    } catch (err) {
+      console.error('Auto-save failed:', err);
+      setSaveStatus('error');
+    }
+  }, [activeNoteId, isInitialLoad, pages, currentPageIndex, strokes, textElements, imageElements, pageSize, pagePattern, pageColor]);
+
+  // Handle tab closure / refresh
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // Trigger save. Note: async might not finish in all browsers, 
+      // but modern browsers often allow a small window or we can use sync storage if needed.
+      // For IndexedDB, it's best effort.
+      saveCurrentNote();
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [saveCurrentNote]);
 
   // Load notes on mount
   useEffect(() => {
     const initStorage = async () => {
+      // Request persistence
+      await storage.requestPersistence();
+      
       const allNotes = await storage.getAllNotes();
       setNotes(allNotes);
 
@@ -253,28 +300,12 @@ function App() {
   useEffect(() => {
     if (!activeNoteId || isInitialLoad) return;
 
-    const timeout = setTimeout(async () => {
-      // Sync current state to pages array before saving
-      const updatedPages = [...pages];
-      updatedPages[currentPageIndex] = {
-        strokes: [...strokes],
-        textElements: [...textElements],
-        imageElements: [...imageElements],
-        pageSettings: { pageSize, pagePattern, pageColor }
-      };
-
-      await storage.saveNote(activeNoteId, {}, {
-        pages: updatedPages,
-        currentPageIndex,
-        pageSettings: { pageSize, pagePattern, pageColor } // Keep as fallback
-      });
-      setPages(updatedPages);
-      // Update updated_at in local state
-      setNotes(prev => prev.map(n => n.id === activeNoteId ? { ...n, updatedAt: Date.now() } : n));
-    }, 1500);
+    const timeout = setTimeout(() => {
+      saveCurrentNote();
+    }, 800);
 
     return () => clearTimeout(timeout);
-  }, [strokes, textElements, imageElements, pageSize, pagePattern, pageColor, activeNoteId, isInitialLoad]);
+  }, [strokes, textElements, imageElements, pageSize, pagePattern, pageColor, activeNoteId, isInitialLoad, currentPageIndex, saveCurrentNote]);
 
   const handleNewNote = async () => {
     const newId = Date.now().toString();
@@ -2015,6 +2046,15 @@ function App() {
           </div>
         </div>
       )}
+      {/* Save Status Indicator */}
+      <div className={`save-status-indicator ${saveStatus}`}>
+        <div className={`status-dot ${saveStatus}`} />
+        <span>
+          {saveStatus === 'saving' && 'Kaydediliyor...'}
+          {saveStatus === 'saved' && 'Kaydedildi'}
+          {saveStatus === 'error' && 'Kaydetme Hatası'}
+        </span>
+      </div>
     </div>
   );
 }

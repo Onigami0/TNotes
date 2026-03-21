@@ -684,3 +684,81 @@ input:checked + .slider:before {
 .zoom-btn svg {
   opacity: 0.8;
 }
+
+/* Save Status Indicator */
+.save-status-indicator {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 8px 14px;
+  background: var(--toolbar-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 8000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+/* Push down if zoom controls are there */
+.save-status-indicator {
+  top: 20px;
+}
+
+.save-status-indicator.saving {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.save-status-indicator.saved {
+  opacity: 0.5;
+  transform: translateY(0);
+}
+
+.save-status-indicator.error {
+  background: rgba(255, 59, 48, 0.1);
+  color: #ff3b30;
+  border-color: rgba(255, 59, 48, 0.2);
+  opacity: 1;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.status-dot.saving {
+  background: var(--accent-color);
+  animation: pulse 1s infinite;
+}
+
+.status-dot.saved {
+  background: #34c759;
+}
+
+.status-dot.error {
+  background: #ff3b30;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0.8); opacity: 0.5; }
+}
+
+@media (max-width: 800px) {
+  .save-status-indicator {
+    top: auto;
+    bottom: 80px;
+    right: 20px;
+  }
+}

@@ -135,8 +135,25 @@ class Storage {
             transaction.objectStore(STORE_METADATA).delete(id);
             transaction.objectStore(STORE_CONTENT).delete(id);
             transaction.oncomplete = () => resolve();
-            transaction.onerror = () => reject(transaction.error);
+            transaction.onerror = () => {
+                console.error('Delete note failed:', transaction.error);
+                reject(transaction.error);
+            };
         });
+    }
+
+    async requestPersistence(): Promise<boolean> {
+        if (navigator.storage && navigator.storage.persist) {
+            try {
+                const isPersisted = await navigator.storage.persist();
+                console.log(`Storage persistence ${isPersisted ? 'granted' : 'denied'}`);
+                return isPersisted;
+            } catch (err) {
+                console.error('Persistence request failed:', err);
+                return false;
+            }
+        }
+        return false;
     }
 }
 
